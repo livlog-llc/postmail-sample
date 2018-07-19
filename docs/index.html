@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -46,18 +47,38 @@
 $('form').submit(function( event ) {
     event.preventDefault();
 
-    $.post('http://localhost:8080/postmail/send/<--- API-KEY --->/', $('form').serialize())
+    $.post('https://www.livlog.xyz/postmail/send/<---API_KEY--->/', $('form').serialize())
     //サーバーからの返信を受け取る
-    .done( function(data) {
-        $('#message').html('正常に送信しました。');
+    .done( function(json) {
+        var data = JSON.parse(json);
+        if (data.status == 200) {
+            $('#message').html('正常に送信しました。');
+        } else  {
+            var error = data.errors.errors[0];
+            switch (error.code){
+            case 10:
+              $('#message').html('必須項目がありません。');
+              break;
+            case 20:
+              $('#message').html('トークンが違います。');
+              break;
+            case 21:
+              $('#message').html('送信回数が上限を超えています。');
+              break;
+            case 22:
+                $('#message').html('指定以外のドメインからは送信できません。');
+                break;
+            default:
+                $('#message').html('送信に失敗しました。');
+                break;
+            }
+        }
     })
     //通信エラーの場合
     .fail( function() {
         $('#message').html('送信に失敗しました。');
     })
 })
-
-
 </script>
 </body>
 </html>
